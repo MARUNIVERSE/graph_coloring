@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 
-from funcs import graph_constr_mw
+from funcs import graph_constr_mw, graph_constr_mw_
+
 
 def bench_graph(N):
     #path to test N
@@ -64,7 +65,8 @@ def bench_graph(N):
     for i in range(len(routes)):
         weights[str(i)] = routes_weights[i] # делаем вершины 0 ... N
 
-    return graph_constr_mw(adj_matrix, weights)
+    #return graph_constr_mw(adj_matrix, weights)
+    return graph_constr_mw_(adj_matrix, weights)
 
 # ВОЗВРАЩАЕМСЯ К ИСХОДНЫМ id ДЛЯ ПУТЕЙ
 def back_to_routes_ID(res, routes):

@@ -4,4 +4,4 @@ from benchmark_graphs import *
 
 
 g = bench_graph(57)
-get_graph_info_wv(g)
+print(get_graph_info_wv(g))

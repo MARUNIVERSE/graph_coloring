@@ -70,6 +70,20 @@ def graph_constr_mw(matrix, weights):
                 G.add_edge(node_list[i],node_list[j])
     return G
 
+# НОВАЯ РЕАЛИЗАЦИЯ. УЧИТЫВАЕТ, ЧТО ВЕРШИНЫ МОГУТ НУМЕРОВАТЬСЯ С 0 И НЕКОТОРЫЕ ЗНАЧЕНИЯ МОГУТ ПРОПУСКАТЬСЯ
+def graph_constr_mw_(matrix, weights):
+    G = nx.Graph()
+    size = matrix.shape[0]
+    vertices = range(size)
+    node_list = list(weights.keys())
+    for i in range(len(node_list)):
+        G.add_node(node_list[i],weight=weights[node_list[i]])
+    for i in range(size):
+        for j in range(size):
+            if i < j and matrix[i][j] != 0:
+                G.add_edge(node_list[i],node_list[j])
+    return G
+
 # генерация рандомной матрицы для графа
 
 def rand_graph_matrix(vert_num, edge_num, max_weight, seed=1234):
