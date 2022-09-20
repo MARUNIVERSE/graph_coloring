@@ -175,4 +175,4 @@ def reg_coloring_intervals(graph):
     end = time()
     # print(color_start.T)
     # print(color_times)
-    return res, end - start, opt  
+    return res, end - start, opt
