@@ -1,5 +1,5 @@
 from funcs import *
-from algos import *
+#from algos import *
 from benchmark_graphs import *
 
 
