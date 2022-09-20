@@ -176,3 +176,65 @@ def reg_coloring_intervals(graph):
     # print(color_start.T)
     # print(color_times)
     return res, end - start, opt
+
+
+def tree_coloring(graph):
+    nodes_dict = nx.get_node_attributes(graph, 'weight')
+
+    adj = np.array(nx.adjacency_matrix(graph).A)
+    nodes = []
+    for key, value in nodes_dict.items():
+        nodes.append((int(key), value))
+    nodes = np.array(nodes, dtype=[('node', int), ('weight', int)])
+    sorted_nodes = np.sort(nodes, order='weight')[::-1]
+    N = nodes.size
+    colored_set = set()
+    colored = []
+    col = 0
+    i = 0
+    while len(colored) < N:
+        while sorted_nodes[i][0] in colored_set:
+            i += 1
+        v0 = sorted_nodes[i][0]
+        colored.append((v0, col))
+        colored_set.add(v0)
+        for k in range(N):
+            v = sorted_nodes[k][0]
+            A = v in colored_set
+            B = adj[v - 1][v0 - 1] > 0
+            if B or A:
+                continue
+            flag = True
+            for p in colored:
+                if p[1] == col:
+                    if adj[p[0] - 1][v - 1] > 0:
+                        flag = False
+                        break
+            if flag:
+                colored.append((v, col))
+                colored_set.add(v)
+        col += 1
+    res = np.zeros((N, 3))
+    earliest = 0
+    current = 0
+    prev = 0
+    max_t = 0
+    # print(colored)
+    # print(colored_set)
+    for g in range(N):
+        if prev == colored[g][1]:
+            res[g][0] = colored[g][0]
+            res[g][1] = current
+            res[g][2] = nodes[colored[g][0] - 1][1] + current
+            earliest = max(earliest, res[g][2])
+        else:
+            prev = colored[g][1]
+            current = earliest
+            res[g][0] = colored[g][0]
+            res[g][1] = current
+            res[g][2] = nodes[colored[g][0] - 1][1] + current
+            earliest = max(earliest, res[g][2])
+        if earliest >= 319:
+            return res[:g, ::], max_t
+        max_t = earliest
+    return res, max_t
