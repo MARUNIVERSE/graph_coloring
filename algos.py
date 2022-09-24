@@ -238,3 +238,28 @@ def tree_coloring(graph):
         #    return res[:g, ::], max_t
         max_t = earliest
     return res, max_t
+
+# алгоритм на основе жадной раскраски графа
+
+from collections import defaultdict
+
+def greedy(g, strategy='largest_first'):
+    colors = nx.greedy_color(g, strategy=strategy)
+    number_of_colors = max(colors.values())+1
+    vert = [[]]*number_of_colors
+    sdvig = 0
+    w = nx.get_node_attributes(g, 'weight')
+    result = []
+    for i in range(number_of_colors):
+        vert[i] = [(x, w[x]) for x in colors if colors[x]==i]
+        for v in vert[i]:
+            result.append([i, v[0], sdvig, sdvig+v[1]])
+        sdvig += max(list(map(lambda x: x[-1], vert[i])))
+        #print(sdvig)
+    right_border = max([x[-1] for x in result])
+    return result, right_border
+
+
+
+
+
