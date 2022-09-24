@@ -234,7 +234,7 @@ def tree_coloring(graph):
             res[g][1] = current
             res[g][2] = nodes[colored[g][0] - 1][1] + current
             earliest = max(earliest, res[g][2])
-        if earliest >= 319:
-            return res[:g, ::], max_t
+        #if earliest >= 319:
+        #    return res[:g, ::], max_t
         max_t = earliest
     return res, max_t
