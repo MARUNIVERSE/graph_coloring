@@ -67,9 +67,9 @@ def LF_wv(graph):
     res = np.zeros((N, 3))
     for i in range(N):
         res[i][0] = sorted_graph[i][0]
-        earliest = 0
+        earliest = 0 # время старта для i вершины
         for p in range(i):
-            if adj[int(res[i][0]) - 1, int(res[p][0]) - 1] > 0:
+            if adj[int(res[i][0]) - 1, int(res[p][0]) - 1] > 0: # если в рассмотренном множестве мы нашли смежную с нашей вершину
                 earliest = max(earliest, res[p, 2])
         res[i][1] = earliest
         res[i][2] = earliest + sorted_graph[i][1]
@@ -239,25 +239,318 @@ def tree_coloring(graph):
         max_t = earliest
     return res, max_t
 
+def tree_coloring_mod(g):
+    coloring, _ = tree_coloring(g)
+    coloring = sorted(coloring, key=lambda x: x[-1]-x[1], reverse=True) # сортируем вершины в порядке невозрастания
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:]) # добавляем новое время, определяющее старт и конец
+    colors = sorted(list(set([x[1] for x in coloring]))) # определяем цвета в раскраске и их количество
+    res = np.copy(coloring)
+
+    vert_index = [x[0] for x in coloring]
+
+    for i in range(len(colors)):
+        if colors[i] == 0:
+            continue # не можем сдвигать влево врешины, стартующие первыми
+
+        prev_color_vertices = [x for x in coloring if x[1] == colors[i-1]] # рассматриваем вершины предыдщуего цвета
+        cur_color_vertices = [x for x in coloring if x[1] == colors[i]] # рассматриваем вершины текущего цвета
+
+        for j in range(len(cur_color_vertices)): # пытаемся сдвинуть текущие вершины
+            n_j = g[str(int(cur_color_vertices[j][0]))]
+
+            for k in range(len(prev_color_vertices)):
+                t = vert_index.index(cur_color_vertices[j][0])
+                if str(int(prev_color_vertices[k][0])) in n_j:
+                    diff = coloring[t][1] - prev_color_vertices[k][-1] # на сколько нужно сдвинуть вершину
+                    coloring[t][-1] -= diff
+                    coloring[t][-2] -= diff
+                    #print(f'diff={diff}')
+                # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
+                    break
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
+
+def greedy_mod(g, strategy='largest_first'):
+
+    coloring, _ = greedy(g, strategy=strategy)
+
+    coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке невозрастания
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
+    colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
+    res = np.copy(coloring)
+
+    vert_index = [x[0] for x in coloring]
+
+    for i in range(len(colors)):
+        if colors[i] == 0:
+            continue  # не можем сдвигать влево врешины, стартующие первыми
+
+        prev_color_vertices = [x for x in coloring if x[1] == colors[i - 1]]  # рассматриваем вершины предыдщуего цвета
+        cur_color_vertices = [x for x in coloring if x[1] == colors[i]]  # рассматриваем вершины текущего цвета
+
+        for j in range(len(cur_color_vertices)):  # пытаемся сдвинуть текущие вершины
+            n_j = g[str(int(cur_color_vertices[j][0]))]
+
+            for k in range(len(prev_color_vertices)):
+                t = vert_index.index(cur_color_vertices[j][0])
+                if str(int(prev_color_vertices[k][0])) in n_j:
+                    diff = coloring[t][1] - prev_color_vertices[k][-1]  # на сколько нужно сдвинуть вершину
+                    coloring[t][-1] -= diff
+                    coloring[t][-2] -= diff
+                    # print(f'diff={diff}')
+                    # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
+                    break
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
+
+
+
 # алгоритм на основе жадной раскраски графа
 
 from collections import defaultdict
 
 def greedy(g, strategy='largest_first'):
-    colors = nx.greedy_color(g, strategy=strategy)
+    colors = nx.greedy_color(g, strategy=strategy) # словарь вершина : цвет
     number_of_colors = max(colors.values())+1
-    vert = [[]]*number_of_colors
+    vert = [[]]*number_of_colors # массив массивов вершин разных цветов вида вершина : вес вершины
     sdvig = 0
     w = nx.get_node_attributes(g, 'weight')
     result = []
     for i in range(number_of_colors):
         vert[i] = [(x, w[x]) for x in colors if colors[x]==i]
         for v in vert[i]:
-            result.append([i, v[0], sdvig, sdvig+v[1]])
+            #result.append([i, v[0], sdvig, sdvig+v[1]])
+            result.append([int(v[0]), sdvig, sdvig+v[1]])
         sdvig += max(list(map(lambda x: x[-1], vert[i])))
         #print(sdvig)
     right_border = max([x[-1] for x in result])
-    return result, right_border
+    return np.asarray(result), right_border
+
+
+
+def combinations(arr):
+    # Python3 program to find combinations from n
+    # arrays such that one element from each
+    # array is present
+
+    # function to print combinations that contain
+    # one element from each of the given arrays
+
+    # number of arrays
+    n = len(arr)
+
+    # to keep track of next element
+    # in each of the n arrays
+    indices = [0 for i in range(n)]
+
+    # list of combinations
+    combs = []
+    #  current combination
+    cur_comb = []
+
+    while True:
+
+        for i in range(n):
+            cur_comb.append(arr[i][indices[i]])
+
+        combs.append(cur_comb.copy())
+        cur_comb.clear()
+
+        # find the rightmost array that has more
+        # elements left after the current element
+        # in that array
+        next = n - 1
+        while (next >= 0 and
+               (indices[next] + 1 >= len(arr[next]))):
+            next -= 1
+
+        # no such array is found so no more
+        # combinations left
+        if (next < 0):
+            return combs
+
+        # if found move to next element in that
+        # array
+        indices[next] += 1
+
+        # for all arrays to the right of this
+        # array current index again points to
+        # first element
+        for i in range(next + 1, n):
+            indices[i] = 0
+
+
+
+def cycle_check(arr):
+    """
+    реализация обхода в глубину для поиска циклов
+    :param arr: массив, определяющий очередность интервалов
+    :return: Boolean, True -- если цикл найден, False -- если не найден
+
+    """
+    arr = list(map(int, arr))
+    N = len(arr) # кол-во вершин
+    paths = []
+    for i in range(1, N+1):
+        path = [i] # путь из вершины
+        prev = arr[i - 1] # предшествующая вершина
+        while prev != 0: # условие остановки -- пришли в вершину, которая стартует первой
+            if prev in path:
+                return True
+            path.append(prev)
+            prev = arr[prev - 1]
+            #paths.append(path)
+
+    # old version
+
+    # for i in range(1, N+1):
+    #     if i not in arr: # если вершины нет в массиве, значит онa последняя в очереди
+    #         path = [i] # путь из вершины
+    #         prev = arr[i - 1] # предшествующая вершина
+    #         while prev != 0: # условие остановки -- пришли в вершину, которая стартует первой
+    #             if prev in path:
+    #                 return True
+    #             path.append(prev)
+    #             prev = arr[prev - 1]
+    #         #paths.append(path)
+    #print(paths)
+    return False
+
+def get_queue(arr):
+    """
+    функция, позволяющая восстановить очередность запуска вершин по списку
+    пример:
+     1 2 3 4 5     [4 -> 3 -> 5 -> 1]
+    [0 1 5 3 1] -> [2 -> 1]
+    :param arr: массив, определяющий порядок запуска вершин
+    :return: очередь, list of lists
+    """
+    arr = list(map(int, arr))
+    N = len(arr)  # кол-во вершин
+    paths = []
+    for i in range(1, N + 1):
+        if i not in arr:  # если вершины нет в массиве, значит онa последняя в очереди
+            path = [i]  # путь из вершины
+            prev = arr[i - 1]  # предшествующая вершина
+            while prev != 0:  # условие остановки -- пришли в вершину, которая стартует первой
+                path.append(prev)
+                prev = arr[prev - 1]
+            paths.append(path)
+    #print(paths)
+    return paths
+
+def intervals(paths, weights):
+    res = [] # структура [[номер вершины, старт, конец], ... []]
+    assigned = []
+    for p in paths:
+        sdvig = 0 # определяет смещение относительно начала
+        for i in p[::-1]: # идем в обратном порядке, начиная с самой первой вершины в очереди
+            if i not in assigned:
+                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                res.append([i, sdvig, sdvig+weights[i-1]])
+                sdvig += weights[i-1] # добавляем к сдвигу вес предшествующей вершины
+                assigned.append(i)
+            else:
+                sdvig += weights[i-1]
+
+    return sorted(res, key=lambda x: int(x[0]))
+
+# можно попытаться оптимизировать, рассматривая вершины попарно
+def contains_banned_intersections(neighb, intervals, N):
+   # checked = [] # вершины, проверенные на пересечения с недопустимыми
+
+    for i in range(N):
+        to_check = [x for x in neighb[i] if x != '0'] # должны проверить соседей и исключить 0
+        for r in to_check:
+            #print(r, to_check)
+            j=int(r)-1
+            # i = 10,j = 9
+            # уточнить корректность
+            #if intervals[i][1] <= intervals[r][-1] & intervals[i][-1] >= intervals[r][1]: # наложение интервалов
+
+            # end_i - start_j < end_i-start_i + end_j-start_j
+            #I = intervals[i][1] <= intervals[j][1] and intervals[j][1]  <= intervals[i][-1] # t1start <= t2start <= t1end
+            #J = intervals[j][1] and intervals[i][1]  <= intervals[][-1] #t2start <= t1start <= t2end
+
+            points = [intervals[i][-1], intervals[j][-1], intervals[i][1], intervals[j][1]]
+
+            # if i == 8 & j == 9:
+            #     print(intervals[i], intervals[j])
+
+            if max(points)-min(points) < ((intervals[i][-1]-intervals[i][1]) + (intervals[j][-1]-intervals[j][1])):
+                # if i == 8 & j == 9:
+                #     print(intervals[i], intervals[j])
+                return True
+
+    return False
+
+def solution(arr):
+    # arr -- массив с интервалами для каждой возможной очереди
+
+    rb = []
+    for q in arr:
+        right_borders = [x[-1] for x in q]
+        rb.append(max(right_borders))
+    min_ = np.asarray(rb).argmin()
+
+
+    return np.asarray(arr[min_]), rb[min_]
+
+
+from tqdm import tqdm
+
+def opt_sol(g):
+
+
+    adj = np.asarray(nx.adjacency_matrix(g).A)
+    N = adj.shape[0] # кол-во вершин
+
+    weights = nx.get_node_attributes(g, 'weight')
+    w = []
+    for key, value in weights.items():
+        w.append(value) # получаем список весов вершин
+
+
+    permut = [] # матрица перестановок
+
+
+    # составляем перестановки
+    res = 1
+    for i in range(N):
+        neighb = list(nx.neighbors(g, str(i + 1))) # список вершин, смежных для i-й вершины -- могут ей предшествовать
+        neighb.append('0') # 0 значит, что i-я вершина может не иметь предшественников
+        permut.append(neighb)
+        #permut.append(list(nx.neighbors(g, str(i+1))).append('0')) # добавляем в массив перестановок списки смежных (запрещенных) вершин
+        res *= len(permut[i])
+    combs = combinations(permut) # все возможные комбинации очередей для интервалов (вершин)
+    old = len(combs)
+
+    # проверка на циклы
+    to_save = []
+    for i in tqdm(range(len(combs))):
+        if '0' not in combs[i]:
+            continue # исключаем варианты, где нет 0 -- хотя бы одна вершина должна начинаться в нуле
+        if not cycle_check(combs[i]):
+            to_save.append(i)
+
+    combs = [combs[i] for i in to_save]
+
+    to_save.clear()
+
+    interv = []
+    for i in tqdm(range(len(combs))):
+        interv.append(intervals(get_queue(combs[i]), w))
+        if not contains_banned_intersections(permut, interv[i], N):
+            to_save.append(i)
+
+    #combs = [combs[i] for i in to_save]
+    interv = [interv[i] for i in to_save]
+
+    return solution(interv)
 
 
 
