@@ -332,7 +332,7 @@ def greedy(g, strategy='largest_first'):
 
 
 
-def combinations(arr):
+def combinations_(arr):
     # Python3 program to find combinations from n
     # arrays such that one element from each
     # array is present
@@ -383,7 +383,13 @@ def combinations(arr):
         for i in range(next + 1, n):
             indices[i] = 0
 
-
+import itertools
+def combinations(arr):
+    #print(arr)
+    return list(itertools.product(*arr))
+    #for elem in itertools.product(arr):
+    #    combs.append(elem)
+    #return combs
 
 def cycle_check(arr):
     """
@@ -526,7 +532,12 @@ def opt_sol(g):
         permut.append(neighb)
         #permut.append(list(nx.neighbors(g, str(i+1))).append('0')) # добавляем в массив перестановок списки смежных (запрещенных) вершин
         res *= len(permut[i])
+
     combs = combinations(permut) # все возможные комбинации очередей для интервалов (вершин)
+
+    #!!!!
+    #combs = list(combs)
+    #print(combs)
     old = len(combs)
 
     # проверка на циклы
@@ -552,7 +563,42 @@ def opt_sol(g):
 
     return solution(interv)
 
+def opt_sol_fast(g):
+    adj = np.asarray(nx.adjacency_matrix(g).A)
+    N = adj.shape[0]  # кол-во вершин
 
+    weights = nx.get_node_attributes(g, 'weight')
+    w = []
+    for key, value in weights.items():
+        w.append(value)  # получаем список весов вершин
+
+    permut = []  # матрица перестановок
+
+    # составляем перестановки
+    res = 1
+    for i in range(N):
+        neighb = list(nx.neighbors(g, str(i + 1)))  # список вершин, смежных для i-й вершины -- могут ей предшествовать
+        neighb.append('0')  # 0 значит, что i-я вершина может не иметь предшественников
+        permut.append(neighb)
+        # permut.append(list(nx.neighbors(g, str(i+1))).append('0')) # добавляем в массив перестановок списки смежных (запрещенных) вершин
+        res *= len(permut[i])
+    print(res)
+
+    #interv = []
+    to_save = []
+    for elem in tqdm(itertools.product(*permut)):
+        if '0' not in elem:
+            #print('oops')
+            continue
+        if cycle_check(elem):
+            continue
+
+        interv = intervals(get_queue(elem), w)
+        #print(elem)
+        if not contains_banned_intersections(permut, interv, N):
+            to_save.append(interv)
+    #print(to_save)
+    return solution(to_save)
 
 
 

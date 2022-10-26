@@ -26,7 +26,7 @@ strategy = ['largest_first',
             'connected_sequential',
             'DSATUR']
 
-TEST = 'greedy' # 'greedy', 'right_border', 'our_algos'
+TEST = 'right_border' # 'greedy', 'right_border', 'our_algos'
 
 if TEST == 'Huawei':
     for i in range(49, 64+1):
@@ -72,13 +72,13 @@ if TEST == 'greedy':
 if TEST == 'right_border':
     print('aaa')
     test_graph = []
-    for dens in [0.1, 0.3]:
+    for dens in [0.1, 0.3, 0.5, 0.7, 0.9]:
         for i in [10, 15]:
             test_graph.append(graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234)))
     for i, g in enumerate(test_graph, start=1):
         print(f"{i}, {g.number_of_nodes()}, {g.number_of_edges()}", end=' ')
         start = time()
-        res, opt = opt_sol(g)
+        res, opt = opt_sol_fast(g)
         end = time() - start
         print(f"правая граница {opt} -- {end}, c")
         bench_res = bench_res.append({'#': i,
