@@ -104,8 +104,7 @@ if TEST == 'our_algos':
                                           'Алгоритм': 'tree_col_mod ',
                                           'Время, с': end,
                                           'Правая граница': opt}, ignore_index=True)
-        if bad_intersections(g, res):
-            print('ooops', g.number_of_edges(), g.number_of_nodes())
+
 print(bench_res)
 bench_res.to_excel('Bench_results.xlsx')
 #bench_res.to_excel()
