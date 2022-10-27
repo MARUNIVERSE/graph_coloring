@@ -26,7 +26,7 @@ strategy = ['largest_first',
             'connected_sequential',
             'DSATUR']
 
-TEST = 'our_algos' # 'greedy', 'right_border', 'our_algos'
+TEST = 'greedy' # 'greedy', 'right_border', 'our_algos'
 
 if TEST == 'Huawei':
     for i in range(49, 64+1):
@@ -53,7 +53,7 @@ if TEST == 'greedy':
         for i in [10, 50, 100, 150, 1000]:
             test_graph.append(graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234)))
     for i, g in enumerate(test_graph, start=1):
-        print(i)
+        #print(i)
         for j in strategy:
             start = time()
             #res, t, opt = LF_wv(g)

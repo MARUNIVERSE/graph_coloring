@@ -365,21 +365,20 @@ def greedy_mod(g, strategy='largest_first'):
         cur_color_vertices = [x for x in coloring if x[1] == colors[i]]  # рассматриваем вершины текущего цвета
 
         for j in range(len(cur_color_vertices)):  # пытаемся сдвинуть текущие вершины
-            n_j = g[str(int(cur_color_vertices[j][0]))] # смежные вершины c инфо о них
+            n_j = g[str(int(cur_color_vertices[j][0]))]  # смежные вершины
             t = vert_index.index(cur_color_vertices[j][0])
             buf = []
 
             for k in range(len(prev_color_vertices)):
                 if str(int(prev_color_vertices[k][0])) in n_j:
-                    buf.append(prev_color_vertices[k]) # список смежных вершин с текущей
+                    buf.append(prev_color_vertices[k])  # список смежных вершин с текущей
 
-            max_rb = sorted(prev_color_vertices[k], key=lambda x: x[-1], reverse=True)[0][-1] # определяем границу, куда можно максимально сдвинуть вершину
+            max_rb = sorted(buf, key=lambda x: x[-1], reverse=True)[0][-1]  # определяем границу, куда можно максимально сдвинуть вершину
             diff = coloring[t][1] - max_rb  # на сколько нужно сдвинуть вершину
             coloring[t][-1] -= diff
             coloring[t][-2] -= diff
-                    # print(f'diff={diff}')
-                    # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
-
+            # print(f'diff={diff}')
+            # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
 
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
