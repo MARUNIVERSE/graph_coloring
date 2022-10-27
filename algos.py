@@ -239,7 +239,7 @@ def tree_coloring(graph):
         max_t = earliest
     return res, max_t
 
-def tree_coloring_mod(g):
+def tree_coloring_mod_(g):
     coloring, _ = tree_coloring(g)
     coloring = sorted(coloring, key=lambda x: x[-1]-x[1], reverse=True) # сортируем вершины в порядке невозрастания
     for i in range(len(coloring)):
@@ -272,7 +272,45 @@ def tree_coloring_mod(g):
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
 
-def greedy_mod(g, strategy='largest_first'):
+# исправленная версия
+def tree_coloring_mod(g):
+    coloring, _ = tree_coloring(g)
+    coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке невозрастания
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
+    colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
+    res = np.copy(coloring)
+
+    vert_index = [x[0] for x in coloring]
+
+    for i in range(len(colors)):
+        if colors[i] == 0:
+            continue  # не можем сдвигать влево врешины, стартующие первыми
+
+        prev_color_vertices = [x for x in coloring if x[1] == colors[i - 1]]  # рассматриваем вершины предыдщуего цвета
+        cur_color_vertices = [x for x in coloring if x[1] == colors[i]]  # рассматриваем вершины текущего цвета
+
+        for j in range(len(cur_color_vertices)):  # пытаемся сдвинуть текущие вершины
+            n_j = g[str(int(cur_color_vertices[j][0]))]  # смежные вершины
+            t = vert_index.index(cur_color_vertices[j][0])
+            buf = []
+
+            for k in range(len(prev_color_vertices)):
+                if str(int(prev_color_vertices[k][0])) in n_j:
+                    buf.append(prev_color_vertices[k])  # список смежных вершин с текущей
+
+            max_rb = sorted(buf, key=lambda x: x[-1], reverse=True)[0][
+                -1]  # определяем границу, куда можно максимально сдвинуть вершину
+            diff = coloring[t][1] - max_rb  # на сколько нужно сдвинуть вершину
+            coloring[t][-1] -= diff
+            coloring[t][-2] -= diff
+            # print(f'diff={diff}')
+            # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
+
+def greedy_mod_(g, strategy='largest_first'):
 
     coloring, _ = greedy(g, strategy=strategy)
 
@@ -307,7 +345,44 @@ def greedy_mod(g, strategy='largest_first'):
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
 
+# исправленная версия
+def greedy_mod(g, strategy='largest_first'):
+    coloring, _ = greedy(g, strategy=strategy)
 
+    coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке невозрастания
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
+    colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
+    res = np.copy(coloring)
+
+    vert_index = [x[0] for x in coloring]
+
+    for i in range(len(colors)):
+        if colors[i] == 0:
+            continue  # не можем сдвигать влево врешины, стартующие первыми
+
+        prev_color_vertices = [x for x in coloring if x[1] == colors[i - 1]]  # рассматриваем вершины предыдщуего цвета
+        cur_color_vertices = [x for x in coloring if x[1] == colors[i]]  # рассматриваем вершины текущего цвета
+
+        for j in range(len(cur_color_vertices)):  # пытаемся сдвинуть текущие вершины
+            n_j = g[str(int(cur_color_vertices[j][0]))] # смежные вершины c инфо о них
+            t = vert_index.index(cur_color_vertices[j][0])
+            buf = []
+
+            for k in range(len(prev_color_vertices)):
+                if str(int(prev_color_vertices[k][0])) in n_j:
+                    buf.append(prev_color_vertices[k]) # список смежных вершин с текущей
+
+            max_rb = sorted(prev_color_vertices[k], key=lambda x: x[-1], reverse=True)[0][-1] # определяем границу, куда можно максимально сдвинуть вершину
+            diff = coloring[t][1] - max_rb  # на сколько нужно сдвинуть вершину
+            coloring[t][-1] -= diff
+            coloring[t][-2] -= diff
+                    # print(f'diff={diff}')
+                    # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
+
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
 
 # алгоритм на основе жадной раскраски графа
 
@@ -468,30 +543,41 @@ def intervals(paths, weights):
 # можно попытаться оптимизировать, рассматривая вершины попарно
 def contains_banned_intersections(neighb, intervals, N):
    # checked = [] # вершины, проверенные на пересечения с недопустимыми
-
+    print(intervals)
     for i in range(N):
         to_check = [x for x in neighb[i] if x != '0'] # должны проверить соседей и исключить 0
         for r in to_check:
-            #print(r, to_check)
             j=int(r)-1
-            # i = 10,j = 9
-            # уточнить корректность
-            #if intervals[i][1] <= intervals[r][-1] & intervals[i][-1] >= intervals[r][1]: # наложение интервалов
-
-            # end_i - start_j < end_i-start_i + end_j-start_j
-            #I = intervals[i][1] <= intervals[j][1] and intervals[j][1]  <= intervals[i][-1] # t1start <= t2start <= t1end
-            #J = intervals[j][1] and intervals[i][1]  <= intervals[][-1] #t2start <= t1start <= t2end
-
             points = [intervals[i][-1], intervals[j][-1], intervals[i][1], intervals[j][1]]
-
-            # if i == 8 & j == 9:
-            #     print(intervals[i], intervals[j])
-
             if max(points)-min(points) < ((intervals[i][-1]-intervals[i][1]) + (intervals[j][-1]-intervals[j][1])):
-                # if i == 8 & j == 9:
-                #     print(intervals[i], intervals[j])
                 return True
 
+    return False
+
+# проверка на правильность присвоения интервала для наших алгоритмов (проверяет готовое решение)
+def bad_intersections(g, res):
+    adj = np.asarray(nx.adjacency_matrix(g).A)
+    N = adj.shape[0]  # кол-во вершин
+    weights = nx.get_node_attributes(g, 'weight')
+    w = []
+    for key, value in weights.items():
+        w.append(value)  # получаем список весов вершин
+    res = sorted(res, key=lambda x: int(x[0]))
+
+    #print(res)
+    permut = []
+    for i in range(N):
+        neighb = list(nx.neighbors(g, str(i + 1)))  # список вершин, смежных для i-й вершины -- могут ей предшествовать
+        #neighb.append('0')  # 0 значит, что i-я вершина может не иметь предшественников
+        permut.append(list(map(int, neighb)))
+    #print(permut)
+    for i in range(N):
+        for r in permut[i]:
+            j = r-1
+            points = [res[i][-1], res[j][-1], res[i][1], res[j][1]]
+            if max(points)-min(points) < ((res[i][-1]-res[i][1]) + (res[j][-1]-res[j][1])):
+                #print(res[i], res[j])
+                return True
     return False
 
 def solution(arr):

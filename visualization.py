@@ -50,14 +50,40 @@ g = graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1
 
 #%%
 i = 10
-dens = 0.1
+dens = 0.6
 g = graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234))
 
 #PYTHONWARNINGS='ignore:semaphore_tracker:UserWarning'
 
-print('aa')
-res, rb = opt_sol_fast(g)
-print(res, rb)
+#print('aa')
+#res, rb = opt_sol_fast(g)
+#print(res, rb)
 
-#res, rb = tree_coloring_mod(g)
-#print(rb)
+res, rb = tree_coloring_mod(g)
+solution_visualization_wv(info=res)
+plot_weighted_graph_wv(g)
+#%%
+
+i = 1000
+dens = 0.9
+g = graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234))
+
+res, tb = tree_coloring_mod(g)
+#print(bad_intersections(g, res))
+
+#%%
+dens=0.1
+i=100
+for j in range(20):
+    print(j)
+    g1 = nx.dense_gnm_random_graph(100, int(dens * i * (i - 1) / 2), seed=1234+j)
+    res, tb = tree_coloring_mod(g)
+    if bad_intersections(g, res):
+        print('wrong solution')
+
+#%%
+vertex = 150 #150
+edge = 1117 #1117
+g2 = graph_constr_mrw(rand_graph_matrix_wv(vertex, edge, seed=1234))
+res, tb = tree_coloring_mod(g)
+print(bad_intersections(g, res))
