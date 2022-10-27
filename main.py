@@ -99,7 +99,7 @@ if TEST == 'our_algos':
     for i,  g in enumerate(test_graph, start=1):
         print(i)
         start = time()
-        res, opt =tree_coloring_sdvig(g)
+        res, opt = LF_sdvig(g)
         end = time() - start
 
         if bad_intersections(g, res):
@@ -108,7 +108,7 @@ if TEST == 'our_algos':
         bench_res = bench_res.append({'#': i,
                                           'Кол-во вершин': g.number_of_nodes(),
                                           'Кол-во ребер': g.number_of_edges(),
-                                          'Алгоритм': 'tree_col_mod ',
+                                          'Алгоритм': 'LF_weighted_mod',
                                           'Время, с': end,
                                           'Правая граница': opt}, ignore_index=True)
 
