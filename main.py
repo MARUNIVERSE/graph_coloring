@@ -26,7 +26,7 @@ strategy = ['largest_first',
             'connected_sequential',
             'DSATUR']
 
-TEST = 'greedy' # 'greedy', 'right_border', 'our_algos'
+TEST = 'our_algos' # 'greedy', 'right_border', 'our_algos'
 
 if TEST == 'Huawei':
     for i in range(49, 64+1):
@@ -46,29 +46,32 @@ if TEST == 'Huawei':
                               'Время, с': end,
                               'Правая граница': opt}, ignore_index=True)
 
-
+err = 0
 if TEST == 'greedy':
     test_graph = []
     for dens in [0.1, 0.3, 0.5, 0.7, 0.9, 0.99]:
         for i in [10, 50, 100, 150, 1000]:
             test_graph.append(graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234)))
     for i, g in enumerate(test_graph, start=1):
-        #print(i)
+        print(i)
         for j in strategy:
             start = time()
             #res, t, opt = LF_wv(g)
-            res, opt = greedy_mod(g, strategy=j)
+            res, opt = sdvig_interv(g, strategy=j)
             #res, opt = tree_coloring(g)
-
             #opt = opt_sol(g)
             end = time() - start
+
+            if bad_intersections(g, res):
+                print('oops')
+
             bench_res = bench_res.append({'#': i,
                                                   'Кол-во вершин': g.number_of_nodes(),
                                                   'Кол-во ребер': g.number_of_edges(),
                                                   'Алгоритм': 'greedy '+j +' _mod',
                                                   'Время, с': end,
                                                 'Правая граница': opt}, ignore_index=True)
-
+    print(err)
 if TEST == 'right_border':
     print('aaa')
     test_graph = []
@@ -94,10 +97,14 @@ if TEST == 'our_algos':
         for i in [10, 50, 100, 150, 1000]:
             test_graph.append(graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234)))
     for i,  g in enumerate(test_graph, start=1):
-
+        print(i)
         start = time()
-        res, opt = tree_coloring_mod(g)
+        res, opt =tree_coloring_sdvig(g)
         end = time() - start
+
+        if bad_intersections(g, res):
+            print('oops')
+
         bench_res = bench_res.append({'#': i,
                                           'Кол-во вершин': g.number_of_nodes(),
                                           'Кол-во ребер': g.number_of_edges(),

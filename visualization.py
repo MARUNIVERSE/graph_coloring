@@ -74,7 +74,7 @@ res, tb = tree_coloring_mod(g)
 #%%
 dens=0.1
 i=100
-for j in range(20):
+for j in range(0):
     print(j)
     g1 = nx.dense_gnm_random_graph(100, int(dens * i * (i - 1) / 2), seed=1234+j)
     res, tb = tree_coloring_mod(g)
@@ -87,3 +87,10 @@ edge = 1117 #1117
 g2 = graph_constr_mrw(rand_graph_matrix_wv(vertex, edge, seed=1234))
 res, tb = tree_coloring_mod(g)
 print(bad_intersections(g, res))
+
+#%%
+i = 10
+dens = 0.5
+g = graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234))
+#plot_weighted_graph_wv(g)
+print(tree_coloring_sdvig(g))

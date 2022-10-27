@@ -272,7 +272,7 @@ def tree_coloring_mod_(g):
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
 
-# исправленная версия
+
 def tree_coloring_mod(g):
     coloring, _ = tree_coloring(g)
     coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке невозрастания
@@ -309,6 +309,78 @@ def tree_coloring_mod(g):
 
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
+
+# НОВАЯ ВЕРСИЯ СДВИГОВ
+def sdvig_interv(g, strategy='largest_first'):
+    coloring, _ = greedy(g, strategy=strategy)
+    N = g.number_of_nodes()
+    # coloring = [[vertex_num, start, end]]
+    coloring = sorted(coloring, key=lambda x: x[0]) # сортируем в порядке вершин: 1, 2, 3...
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
+    coloring = np.array(coloring)
+    visited = set() # вершины, которые уже просмотрены/сдвинуты
+
+    # все вершины первого цвета отправляем в просмотренные -- с ними ничего нельзя сделать
+    visited.update([x[0] for x in coloring if x[1]==0])
+
+    colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
+
+    for c in colors[1:]: # не смотрим первый цвет -- ничего не можем улучшить там
+        cur_color_v = [x[0] for x in coloring if x[1] == c] # смотрим вершины текущего цвета
+        #print(cur_color_v)
+        for i in cur_color_v:
+            #print(visited, set(g[str(int(i))]))
+            s = visited & set(map(int, g[str(int(i))])) # есть ли в просмотренных есть вершины, смежные с текущей ? -- получаем их
+            #print(s)
+            adj_visited_vertices = np.array([x for x in coloring if x[0] in s])
+            #print(adj_visited_vertices)
+            new_start = max(adj_visited_vertices[:, -1]) # выбираем границу, к которой можем сдвинуться без наложения интервалов
+            diff = coloring[i-1][1] - new_start
+            coloring[i-1][3] = new_start
+            coloring[i-1][4] = coloring[i-1][2] - diff
+            visited.add(i)
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
+
+# НОВАЯ ВЕРСИЯ Tree coloring
+def tree_coloring_sdvig(g):
+    coloring, _ = tree_coloring(g)
+    #print(coloring)
+    N = g.number_of_nodes()
+    # coloring = [[vertex_num, start, end]]
+    coloring = sorted(coloring, key=lambda x: x[0])  # сортируем в порядке вершин: 1, 2, 3...
+    for i in range(len(coloring)):
+        coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
+    coloring = np.array(coloring, dtype=int)
+    visited = set()  # вершины, которые уже просмотрены/сдвинуты
+
+    # все вершины первого цвета отправляем в просмотренные -- с ними ничего нельзя сделать
+    visited.update([x[0] for x in coloring if x[1] == 0])
+
+    colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
+
+    for c in colors[1:]:  # не смотрим первый цвет -- ничего не можем улучшить там
+        cur_color_v = [x[0] for x in coloring if x[1] == c]  # смотрим вершины текущего цвета
+        # print(cur_color_v)
+        for i in cur_color_v:
+            # print(visited, set(g[str(int(i))]))
+            s = visited & set(
+                map(int, g[str(int(i))]))  # есть ли в просмотренных есть вершины, смежные с текущей ? -- получаем их
+            # print(s)
+            adj_visited_vertices = np.array([x for x in coloring if int(x[0]) in s])
+            # print(adj_visited_vertices)
+            new_start = max(
+                adj_visited_vertices[:, -1])  # выбираем границу, к которой можем сдвинуться без наложения интервалов
+            diff = coloring[i - 1][1] - new_start
+            coloring[i - 1][3] = new_start
+            coloring[i - 1][4] = coloring[i - 1][2] - diff
+            visited.add(i)
+
+    result = [[x[0], x[3], x[4]] for x in coloring]
+    return np.asarray(result), max([x[-1] for x in coloring])
+
 
 def greedy_mod_(g, strategy='largest_first'):
 
@@ -349,7 +421,7 @@ def greedy_mod_(g, strategy='largest_first'):
 def greedy_mod(g, strategy='largest_first'):
     coloring, _ = greedy(g, strategy=strategy)
 
-    coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке невозрастания
+    coloring = sorted(coloring, key=lambda x: x[-1] - x[1], reverse=True)  # сортируем вершины в порядке неубывания
     for i in range(len(coloring)):
         coloring[i] = list(coloring[i]) + list(coloring[i][1:])  # добавляем новое время, определяющее старт и конец
     colors = sorted(list(set([x[1] for x in coloring])))  # определяем цвета в раскраске и их количество
@@ -378,7 +450,6 @@ def greedy_mod(g, strategy='largest_first'):
             coloring[t][-1] -= diff
             coloring[t][-2] -= diff
             # print(f'diff={diff}')
-            # сдвинули вершину -- переходим дальше (нет смысла рассматривать возможность большего сдвига, иначе будет наложение с первой смежной вершиной)
 
     result = [[x[0], x[3], x[4]] for x in coloring]
     return np.asarray(result), max([x[-1] for x in coloring])
