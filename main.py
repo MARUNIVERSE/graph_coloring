@@ -107,5 +107,4 @@ if TEST == 'our_algos':
 
 print(bench_res)
 bench_res.to_excel('Bench_results.xlsx')
-#bench_res.to_excel()
 
