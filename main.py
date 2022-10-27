@@ -93,7 +93,7 @@ if TEST == 'our_algos':
     for dens in [0.1, 0.3, 0.5, 0.7, 0.9, 0.99]:
         for i in [10, 50, 100, 150, 1000]:
             test_graph.append(graph_constr_mrw(rand_graph_matrix_wv(i, int(dens * i * (i - 1) / 2), seed=1234)))
-    for i, g in enumerate(test_graph, start=1):
+    for i,  g in enumerate(test_graph, start=1):
 
         start = time()
         res, opt = tree_coloring_mod(g)
