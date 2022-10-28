@@ -521,7 +521,7 @@ def Clique_sampling(graph, samples, seed=69):
     for i in Notincliset:
         Notincli.append(nodes[i])
     Notincli = np.array(Notincli,dtype=[('node', int),('weight', int), ('degree', int),('color',int)])
-    Notincli = np.sort(Notincli,order=['degree','weight'])[::-1]
+    Notincli = np.sort(Notincli,order=['weight','degree'])[::-1]
     
     for nd in Notincli:
         done=False
