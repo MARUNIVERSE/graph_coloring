@@ -559,12 +559,9 @@ def Clique_sampling(graph, samples, seed=69):
                 break
         if done ==True:
             Removed2.remove(nd)
-        else:
-            print('removed not added :(')
     answer = np.zeros((N,3))
     left = 0
     iteration = 0
-    print(initColoring)
     for i in range(len(initColoring)):
         for j in initColoring[i]:
             answer[iteration,::]=np.array([j['node'],left,left+j['weight']])
