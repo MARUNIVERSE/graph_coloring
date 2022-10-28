@@ -516,9 +516,7 @@ def Clique_sampling(graph, samples, seed=69):
         if h['weight']>0:
             h['color']=curcolor
             curcolor+=1
-            initColoring.append([h])
-            print(h,'colored',curcolor-1)
-    
+            initColoring.append([h])    
     Notincli = []
     for i in Notincliset:
         Notincli.append(nodes[i])
