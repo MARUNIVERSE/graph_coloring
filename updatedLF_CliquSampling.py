@@ -144,7 +144,7 @@ def sdvig_any(g, c): # на входе граф из N вершин и гото�
     choose = set(range(N))
     while len(Startset) < samples and len(Startset)<N: # выбираем вершины для построения подграфов
         Startset.add(random.choice(tuple(choose)))
-    print(N,Startset)
+    # print(N,Startset)
     while len(Startset)>0: # строим подграфы максимального веса
         nod = Startset.pop()
         C = []
